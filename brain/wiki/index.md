@@ -6,6 +6,9 @@
 - [[skills/index|Skill Catalog]] — capability modules loaded into agents per-task
 
 ## Concepts
+- [[context-window]] — agent working memory and the 50% rule
+- [[signal-tags]] — #routine, #had-friction, #surprised, #failed-first
+- [[wikilinks]] — double-bracketed references for navigation and graph connectivity
 
 ## References
 - [[git-coordination]] — branch strategy, commit conventions, crash recovery

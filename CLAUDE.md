@@ -468,7 +468,7 @@ Every concept has ONE authoritative location. When you need to understand or mod
 | Orchestration (summary) | This file -> "Orchestration" | `wiki/references/orchestration.md` (full spec) |
 | Verification sign-off | This file -> "Verification Sign-off" | Reviewer role (format only) |
 | Skills system | This file -> "Skills System" | `brain/CLAUDE.md`, `skills/index.md` |
-| Skill auto-suggest | This file -> "Auto-Suggest Flow" | `skills/index.md` (trigger definitions) |
+| Skill auto-suggest | This file -> "Skills System" | `skills/index.md` (trigger definitions) |
 | Core rules | This file -> "Core Rules" | — |
 | All workflows | This file -> "Workflows" | — |
 | All commands | This file -> "Commands" | — |

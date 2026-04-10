@@ -30,7 +30,7 @@ What does "done" look like? One sentence.
 
 ## Verify
 <!-- Acceptance criteria. Each must be mechanically checkable. -->
-<!-- Owned by Planner/Commander. Implementer works against these. Reviewer checks these. -->
+<!-- Owned by Planner/Orchestrator. Implementer works against these. Reviewer checks these. -->
 <!-- The task is not done until every box is checked AND Reviewer signs off. -->
 - [ ]
 

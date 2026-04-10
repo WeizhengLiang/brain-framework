@@ -35,7 +35,7 @@ When running `/retro` (Tier 3 analysis) or when reviewing multiple retrospective
 ### Graduating a Rule to CLAUDE.md
 1. Rule must be at confidence `proven` (3+ confirming retros)
 2. Rule must be general enough to apply across projects, not project-specific
-3. Propose the change to Commander — never self-modify CLAUDE.md without approval
+3. Propose the change to Orchestrator — never self-modify CLAUDE.md without approval
 4. If approved, add to the appropriate section of CLAUDE.md
 5. Remove from playbook (it now lives at a higher level)
 
