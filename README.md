@@ -39,6 +39,61 @@ Brain gives Claude Code a workspace with task management, agent orchestration, p
    /start
    ```
 
+## Walkthrough: Your First Project
+
+This walks you from setup through completing your first task.
+
+### 1. Setup
+```
+> /setup
+```
+Claude asks your preferred name, configures the system. One-time.
+
+### 2. Plan a project
+```
+> /plan redesign wiki concept pages
+```
+Claude spawns the Planner role, which:
+- Creates a milestone file with a Research section (current state, unknowns, risks)
+- Presents findings and asks for approval
+- Decomposes into slices and tasks with Read/Write/Verify contracts
+- Presents the plan and asks for approval
+- Creates a `milestone/wiki-redesign` branch
+
+### 3. Start working
+```
+> /start
+```
+Claude reads active tasks, reports resume points, and suggests what to work on next. It checks `blocked-by` dependencies and picks the highest-priority unblocked task.
+
+### 4. Execute
+Claude activates a task and orchestrates based on `team-size`:
+- **solo** — does the work directly, self-checks
+- **pair** — spawns an Implementer agent, then a separate Reviewer agent
+- **full** — Planner first, then Implementer, then Reviewer
+
+### 5. Save progress
+```
+> /save
+```
+Checkpoints progress at every level (task, slice, milestone) and commits to git. A crash after `/save` loses nothing.
+
+### 6. Complete a task
+```
+> /done updated 3 concept pages to standard template
+```
+Claude picks a signal tag (`#routine`, `#had-friction`, `#surprised`, `#failed-first`), appends to done.md, commits, and auto-triggers a retrospective if non-routine.
+
+### 7. Learn from experience
+Non-routine tasks get retrospectives automatically. When enough pile up:
+```
+> /retro
+```
+Claude reads retrospectives, finds patterns, and distills them into playbook rules or skills that improve future work.
+
+### See it in action
+Check `brain/workstation/projects/example-blog-redesign/` for a complete worked example showing a milestone, slice, task, and verification report — all filled in.
+
 ## Core Concepts
 
 ### Task Hierarchy
@@ -128,8 +183,9 @@ The system rewrites its own instructions based on evidence.
 |---------|-------------|
 | `/setup` | First-run personalization |
 | `/start` | Status report with exact resume points |
+| `/plan [goal]` | Invoke Planner to research and decompose a goal |
 | `/inbox [text]` | Quick capture to inbox |
-| `/save` | Atomic checkpoint at every level |
+| `/save` | Atomic checkpoint at every level (includes git commit) |
 | `/verify` | Spawn Reviewer to independently verify work |
 | `/done [summary]` | Complete a task with signal tag |
 | `/review` | Create a retrospective |

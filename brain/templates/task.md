@@ -2,7 +2,8 @@
 status: backlog
 milestone: "{{milestone}}"
 slice: "{{slice}}"
-priority:
+priority: # p0 (drop everything) | p1 (do next) | p2 (normal) | p3 (nice to have)
+blocked-by: [] # task filenames this task depends on — cannot start until all are done
 context-load: # light | medium | heavy — must be light or medium (50% rule)
 team-size: pair # solo | pair | full
 doer: implementer

@@ -8,5 +8,7 @@
 ## Concepts
 
 ## References
+- [[git-coordination]] — branch strategy, commit conventions, crash recovery
+- [[orchestration]] — detailed agent orchestration flows and what each role receives
 
 ## Decisions

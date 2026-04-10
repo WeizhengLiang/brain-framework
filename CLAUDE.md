@@ -40,6 +40,7 @@ your-vault/                       <- vault root, start Claude Code here
         ├── milestone.md
         ├── slice.md
         ├── task.md                   <- Read/Write/Verify contract
+        ├── project.md                <- project CLAUDE.md template
         ├── skill.md
         ├── decision.md
         ├── concept.md
@@ -73,7 +74,7 @@ Task:       Execute -> Verify
 
 **Research is mandatory at Milestone level.** Do not plan without it. It prevents the most expensive mistake — building the wrong thing.
 
-**Research is optional at Slice level.** Use only when unknowns surface during execution. Delete the section if not needed — don't carry empty ceremony.
+**Research is optional at Slice level.** Activate it when: (1) a task's Read list reveals the scope was misunderstood, (2) a dependency turns out to work differently than assumed, or (3) the Implementer reports a blocker that changes the task plan. If none of these apply, delete the Research section — don't carry empty ceremony.
 
 **Research does not exist at Task level.** A task's Read list IS the research input. If a task needs research, it's not yet a task — it's a slice.
 
@@ -106,6 +107,20 @@ A task must be sized so the agent needs <=50% of its context window for the know
 
 **If a task's Read list exceeds ~10 files or includes large files, split it.**
 **If you can't explain the task goal in one sentence, split it.**
+
+### Task Priority
+
+Tasks declare `priority` in frontmatter:
+- **p0** — Drop everything. Blocking other work or a critical fix.
+- **p1** — Do next. High-value, time-sensitive.
+- **p2** — Normal. Standard backlog ordering.
+- **p3** — Nice to have. Do when nothing higher is queued.
+
+Within the same priority, prefer tasks that unblock other tasks (check `blocked-by` fields).
+
+### Task Dependencies
+
+Tasks declare `blocked-by: [task-filename, ...]` in frontmatter. A task cannot be activated while any of its blockers are incomplete. The Orchestrator checks this when activating tasks and skips blocked ones, picking the next unblocked task instead.
 
 ### Hierarchy in practice
 ```
@@ -145,48 +160,18 @@ Each task declares a `team-size` in frontmatter:
 - **pair** — Implementer + Reviewer. Standard for most tasks. The Reviewer MUST be a separate agent that has NOT seen the Implementer's conversation
 - **full** — Planner + Implementer + Reviewer. Use for complex, high-risk, or ambiguous work
 
-### Orchestration via Claude Code Subagents
+### Orchestration
 
-The main conversation acts as **Orchestrator**. It spawns role agents as subagents using the Agent tool. Key rules:
+> Full reference: [[orchestration|brain/wiki/references/orchestration.md]]
 
-1. **Implementer and Reviewer are always separate agents** — the Reviewer must NOT see the Implementer's reasoning. This is the whole point. Fresh context = fresh eyes
-2. **Load the role CLAUDE.md into the agent prompt** — each subagent gets its role definition + the task file as input
-3. **Parallel when independent** — multiple Implementer agents can run in parallel for independent tasks within a slice
-4. **Sequential when dependent** — Implementer must finish before Reviewer starts
+The main conversation acts as **Orchestrator**, spawning role agents as subagents. Key rules:
 
-### Orchestration Flow
+1. **Implementer and Reviewer are always separate agents** — Reviewer never sees Implementer's reasoning
+2. **Load the role CLAUDE.md** into each subagent's prompt alongside the task file and skills
+3. **Parallel when independent** — tasks without `blocked-by` dependencies can run simultaneously
+4. **Sequential when dependent** — Implementer finishes before Reviewer starts
 
-**Milestone-level orchestration (by Orchestrator):**
-```
-User gives directive
-    |
-1. RESEARCH — Orchestrator or Planner agent investigates
-   |-- check wiki, playbook, retrospectives for prior art
-   |-- identify unknowns, risks, constraints
-   |-- fill Research section in milestone file
-   +-- set phase: plan
-    |
-2. PLAN — Planner agent decomposes
-   |-- read Research output
-   |-- create slices and tasks with Read/Write/Verify contracts
-   |-- auto-suggest skills per task
-   +-- set phase: execute
-    |
-3. EXECUTE — per task within each slice:
-   |-- read task file, determine team-size, load skills
-   |-- spawn Implementer agent
-   |       (input: role CLAUDE.md + skills + task file + project CLAUDE.md)
-   |-- spawn Reviewer agent -> writes Verification
-   |       (input: role CLAUDE.md + skills + task file + output files ONLY)
-   |       (does NOT receive Implementer's conversation)
-   +-- if fail -> re-spawn Implementer with feedback
-       if pass -> /done
-    |
-4. COMPLETION — all slices verified
-   |-- check milestone acceptance criteria
-   |-- signal tag + retrospective if non-routine
-   +-- set phase: completion
-```
+**Flow:** Research → Plan → Execute (per task: Implementer → Reviewer → done) → Completion
 
 ### Verification Sign-off
 
@@ -197,50 +182,43 @@ Every task file has a `## Verification` section filled by the Reviewer:
 
 **`/done` is blocked until Reviewer verdict is `pass` or `pass-with-notes`**, unless the user explicitly overrides.
 
+### Conflict Resolution
+
+When Reviewer and Implementer disagree on a Verify criterion:
+
+1. **Reviewer flags the dispute** in the Verification report with `[DISPUTED]` and a clear explanation of what they expected vs. what they found.
+2. **Orchestrator escalates to the user** with both perspectives: the Reviewer's objection and the Implementer's rationale (from the task's Progress/Notes).
+3. **User decides:** accept (override Reviewer), reject (Implementer reworks), or revise the criterion (Planner rewrites the Verify item, both agents re-execute against the new criterion).
+4. **Decision is recorded** in the task file's Verification section under `### Disputes` with the resolution and rationale.
+
+The Reviewer may NOT weaken criteria unilaterally. The Implementer may NOT dismiss a failure unilaterally. Disputes always go to the user.
+
 ## Skills System
 
-Skills are reusable capability modules loaded into agent context per-task. They fill the gap between roles (how to behave) and wiki (facts) — skills are the "how to do it well" for a specific domain.
+Skills are reusable capability modules loaded into agent context per-task — the "how to do it well" for a specific domain.
 
-### Skill Layers
+**Three layers:** Brain skills (`brain/skills/`), package skills (e.g., `everything-claude-code`), and generated skills (graduated from retrospectives).
 
-| Layer | Source | Location |
-|-------|--------|----------|
-| **Brain skills** | Custom for this vault | `brain/skills/` |
-| **Package skills** | Installed packages (e.g. `everything-claude-code`) | Loaded via Skill tool |
-| **Generated skills** | Graduated from retrospective patterns | `brain/skills/` with `source: generated` |
+**Auto-suggest:** When activating a task, the Orchestrator matches the task's Read/Write file patterns, tags, and Goal keywords against triggers declared in `brain/skills/index.md`. Matched skills are set in the task's `skills` frontmatter. User can add/remove before execution.
 
-### Auto-Suggest Flow
+**Loading:** When spawning an agent, the Orchestrator reads the task's `skills` list and includes skill content in the agent's prompt alongside the role CLAUDE.md.
 
-When activating a task, the Orchestrator auto-suggests skills by matching against the task's Read/Write lists, tags, and Goal:
+**Graduation path:** Retrospectives produce playbook rules (single directives). When a pattern is procedural (multi-step), it becomes a skill instead. `/retro` handles this distinction.
 
-1. Read `brain/skills/index.md` for the skill catalog with triggers
-2. Match task file patterns against skill triggers (e.g., `*.tsx` in Write list -> `frontend-patterns`)
-3. Match task tags against skill triggers (e.g., `#security` -> `security-review`)
-4. Match task Goal keywords against skill triggers
-5. List matched skills in the task's `skills` frontmatter field
-6. User can add/remove skills before execution
+## Git Coordination
 
-### Skill Loading in Orchestration
+> Full spec: [[git-coordination|brain/wiki/references/git-coordination.md]]
 
-When spawning an agent (Implementer, Reviewer, etc.), the Orchestrator:
-1. Reads the task's `skills` list from frontmatter
-2. For brain skills: reads the skill file from `brain/skills/`
-3. For package skills: references the installed skill by qualified name
-4. Includes skill content in the agent's prompt alongside the role CLAUDE.md
+**Branch model:** `main` (stable) → `milestone/<name>` (per active milestone) → worktrees (per task, temporary).
 
-### Skill Graduation Path
-
-Skills can be born from experience, not just created manually:
-
-```
-retrospective -> playbook rule (single directive)
-                    | if procedural (multi-step)
-               skill (full capability module)
-                    | if universally applicable
-               package contribution
-```
-
-The `/retro` command identifies when a pattern is too complex for a playbook rule and creates a skill instead.
+**Key rules:**
+- Milestone branch created at `phase: execute`, merged to main at `phase: completion`, then deleted.
+- `pair`/`full` tasks use Claude Code worktrees (`isolation: "worktree"`). `solo` tasks work directly on the milestone branch.
+- Commit format: `[milestone/<name>] <type>: <description>` — types: `research`, `plan`, `task`, `slice`, `save`, `completion`.
+- Signal tags go in task commit messages (e.g., `#had-friction`).
+- No force pushes. No rebasing. No slice/task branches.
+- `/save` commits, `/done` commits, `/verify pass` merges worktree to milestone branch.
+- Crash recovery: branch name → active milestone, task files → resume point, `git status` → in-flight changes.
 
 ## Core Rules
 
@@ -291,7 +269,7 @@ The `/retro` command identifies when a pattern is too complex for a playbook rul
 ### Adding a new project
 
 1. Create `brain/workstation/projects/project-name/`
-2. Create a CLAUDE.md inside it with: project goal, role to use, required wiki reading, current status
+2. Create a CLAUDE.md inside it using `templates/project.md`
 3. Create milestone file(s) using `templates/milestone.md` — start in `phase: research`
 4. Complete the Research section before any planning or decomposition
 5. Move to `phase: plan` — decompose into slices -> tasks
@@ -319,6 +297,25 @@ First-run personalization. Run this once after cloning the framework.
 5. Give a brief status report showing: active tasks with exact resume points, next tasks in the current slice, backlog highlights
 6. Suggest what to work on
 
+### /plan [goal or milestone-name]
+
+Invoke the Planner role to decompose a goal into executable work.
+
+1. If a milestone file exists for the given name, read it. Otherwise, create one using `templates/milestone.md`
+2. If the milestone is in `phase: research`, run Research first:
+   - Spawn a Planner agent (using `_roles/planner/CLAUDE.md`) to fill the Research section
+   - Check wiki, playbook, retrospectives for prior art
+   - Present the Research Verdict to the user for approval before proceeding
+3. Once Research is approved, advance to `phase: plan`:
+   - Planner decomposes into slices and tasks with Read/Write/Verify contracts
+   - Auto-suggest skills per task from `skills/index.md`
+   - Set `priority` and `blocked-by` for each task
+   - Present the plan to the user for approval
+4. On approval, create slice files using `templates/slice.md` and add tasks to `brain/tasks/backlog.md`
+5. Advance milestone to `phase: execute` and create the milestone branch (`git checkout -b milestone/<name>`)
+
+The user can re-run `/plan` on an existing milestone to revise the decomposition.
+
 ### /inbox [text]
 
 Create a timestamped note in brain/inbox/ with the text. This is a scratchpad — ideas stay here until the user asks to sort them into tasks or wiki.
@@ -338,6 +335,8 @@ Atomic checkpoint at every level of the hierarchy. A fresh agent should be able 
 3. **Milestone level:** If a milestone file exists, update its slice checkboxes and Progress section
 4. **Wiki:** Update any wiki pages with reusable knowledge learned
 5. **Project:** Update the project's CLAUDE.md if project-level context changed
+
+6. **Git:** Stage all changes in `brain/` and commit: `[milestone/<name>] save: <resume-from note>`
 
 This does NOT close the task — it just ensures a clean resume point at every level.
 
@@ -367,8 +366,9 @@ For `solo` team-size tasks, `/verify` is skipped — the Generalist self-checks.
 4. Remove the task file from `brain/tasks/active/` (archive to project folder if desired)
 5. Remove the index entry from `brain/tasks/active.md`
 6. Update the parent slice's task checkboxes (mark this task done)
-7. If the signal is anything other than `#routine`, automatically trigger `/review`
-8. If all tasks in the slice are done, check slice-level Verify criteria
+7. Commit: `[milestone/<name>] task: <summary> #signal`
+8. If the signal is anything other than `#routine`, automatically trigger `/review`
+9. If all tasks in the slice are done, check slice-level Verify criteria
 
 ### /review
 
@@ -465,7 +465,7 @@ Every concept has ONE authoritative location. When you need to understand or mod
 | 50% context rule | This file -> "The 50% Context Rule" | `brain/CLAUDE.md`, planner role |
 | Agent team & orchestration | This file -> "Agent Team & Roles" | `brain/CLAUDE.md`, all role files |
 | Team sizes (solo/pair/full) | This file -> "Team Sizes" | Task template frontmatter |
-| Orchestration flow | This file -> "Orchestration Flow" | — |
+| Orchestration (summary) | This file -> "Orchestration" | `wiki/references/orchestration.md` (full spec) |
 | Verification sign-off | This file -> "Verification Sign-off" | Reviewer role (format only) |
 | Skills system | This file -> "Skills System" | `brain/CLAUDE.md`, `skills/index.md` |
 | Skill auto-suggest | This file -> "Auto-Suggest Flow" | `skills/index.md` (trigger definitions) |
@@ -483,6 +483,11 @@ Every concept has ONE authoritative location. When you need to understand or mod
 | Verification report format | `_roles/reviewer/CLAUDE.md` | This file -> "Verification Sign-off" |
 | Playbook (operational rules) | `wiki/playbook.md` | `brain/CLAUDE.md`, `skills/index.md` |
 | Skill catalog | `skills/index.md` | `brain/CLAUDE.md`, this file |
+| Git coordination | This file -> "Git Coordination" (summary) | `wiki/references/git-coordination.md` (full spec) |
+| Task priority | This file -> "Task Priority" | Task template frontmatter |
+| Task dependencies | This file -> "Task Dependencies" | Task template frontmatter |
+| Conflict resolution | This file -> "Conflict Resolution" | Reviewer role |
+| Project template | `templates/project.md` | This file -> "Adding a new project" |
 | Address | This file -> "Address" | — |
 | Meta-consistency | This file -> "Canonical Registry" + `/meta-check` | `brain/CLAUDE.md` |
 

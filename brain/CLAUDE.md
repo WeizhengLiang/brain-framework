@@ -21,8 +21,13 @@
 | 50% context rule | Root CLAUDE.md → "The 50% Context Rule" |
 | Agent team & orchestration | Root CLAUDE.md → "Agent Team & Roles" |
 | Skills system & auto-suggest | Root CLAUDE.md → "Skills System" |
-| All commands (/start, /save, /done, etc.) | Root CLAUDE.md → "Commands" |
+| All commands (/start, /plan, /save, /done, etc.) | Root CLAUDE.md → "Commands" |
 | All workflows (starting work, inbox, etc.) | Root CLAUDE.md → "Workflows" |
+| Git coordination (full spec) | `wiki/references/git-coordination.md` |
+| Git coordination (summary) | Root CLAUDE.md → "Git Coordination" |
+| Task priority & dependencies | Root CLAUDE.md → "Task Priority" / "Task Dependencies" |
+| Conflict resolution | Root CLAUDE.md → "Conflict Resolution" |
+| Project template | `templates/project.md` |
 | Self-learning system (3 tiers) | Root CLAUDE.md → "Self-Learning System" |
 | Atomic save spec | Root CLAUDE.md → "/save" |
 | Core rules | Root CLAUDE.md → "Core Rules" |
