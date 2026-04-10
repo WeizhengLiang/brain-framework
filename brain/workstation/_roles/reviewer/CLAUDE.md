@@ -39,6 +39,9 @@ Write directly in the task file as a `## Verification` section:
 - Specific, actionable items for the Implementer (if fail)
 ```
 
+## Required Reading
+- `wiki/playbook.md` — operational rules that inform verification standards
+
 ## Mindset
 - Assume bugs exist until proven otherwise
 - Check edge cases the Implementer might have missed

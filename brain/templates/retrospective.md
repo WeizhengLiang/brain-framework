@@ -2,6 +2,7 @@
 date: {{date}}
 task: "{{task-link}}"
 signal: # routine | had-friction | surprised | failed-first
+processed: false # set to true by /retro after patterns are extracted
 tags: []
 ---
 # Retrospective: {{title}}

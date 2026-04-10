@@ -1,11 +1,12 @@
 ---
-status: backlog
+status: backlog # backlog | active | done
 milestone: "{{milestone}}"
 slice: "{{slice}}"
 priority: # p0 (drop everything) | p1 (do next) | p2 (normal) | p3 (nice to have)
 blocked-by: [] # task filenames this task depends on — cannot start until all are done
-context-load: # light | medium | heavy — must be light or medium (50% rule)
+context-load: # light (≤5 files) | medium (6-10 files) — if heavy (>10), split the task
 team-size: pair # solo | pair | full
+isolation: false # true for pair/full tasks (uses git worktree). false for solo tasks.
 doer: implementer
 verify: reviewer # must differ from doer
 skills: [] # auto-suggested or manually assigned — loaded into agent context

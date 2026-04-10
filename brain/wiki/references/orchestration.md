@@ -33,13 +33,15 @@ User gives directive
     |
 3. EXECUTE — per task within each slice:
    |-- read task file, determine team-size, load skills
-   |-- check blocked-by: skip if any blocker is incomplete
+   |-- check blocked-by: skip if blocker incomplete, halt if circular
+   |-- if pair/full: spawn Implementer with isolation: "worktree"
+   |-- if solo: work directly on milestone branch
    |-- spawn Implementer agent
    |       (input: role CLAUDE.md + skills + task file + project CLAUDE.md)
    |-- spawn Reviewer agent -> writes Verification
    |       (input: role CLAUDE.md + skills + task file + output files ONLY)
    |       (does NOT receive Implementer's conversation)
-   +-- if fail -> re-spawn Implementer with feedback
+   +-- if fail -> re-spawn Implementer with feedback (max 3 retries)
        if pass -> /done
     |
 4. COMPLETION — all slices verified
@@ -53,6 +55,7 @@ User gives directive
 
 ### Implementer
 - Role CLAUDE.md (`_roles/implementer/CLAUDE.md`)
+- Wiki pages from role's `required_reading` section
 - Task file (Goal, Read, Write, Verify)
 - Matched skills from task's `skills` field
 - Project CLAUDE.md (context)

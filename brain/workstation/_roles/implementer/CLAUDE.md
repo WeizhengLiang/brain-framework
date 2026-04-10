@@ -17,6 +17,9 @@ You are the builder. Execute the task contract — read what's listed, write wha
 - **Don't verify your own work as final.** The Reviewer does that
 - **Don't modify Verify criteria.** Those belong to the Planner/Orchestrator
 
+## Required Reading
+- `wiki/playbook.md` — operational rules that may affect execution
+
 ## Handoff
 When done:
 1. All Read items checked

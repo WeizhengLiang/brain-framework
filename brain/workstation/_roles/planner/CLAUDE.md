@@ -34,6 +34,10 @@ Before any planning, fill every subsection in the milestone file's `## Research`
 - [ ] Tasks have clear ordering with minimal dependencies
 - [ ] team-size matches risk: routine → solo, standard → pair, complex → full
 
+## Required Reading
+- `wiki/playbook.md` — operational rules that constrain planning
+- `skills/index.md` — available skills for auto-suggest
+
 ## Output
 - Milestone files with completed Research section
 - Slice files using `templates/slice.md`

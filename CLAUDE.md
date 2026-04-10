@@ -99,6 +99,8 @@ The atomic unit an agent executes. Defined by a contract:
 - **Write** — files the agent will create or modify (this IS the scope boundary)
 - **Verify** — acceptance criteria, each mechanically checkable
 
+**Status values:** `backlog` → `active` → `done`. Tasks flow one direction only (Core Rule 3).
+
 ### The 50% Context Rule
 A task must be sized so the agent needs <=50% of its context window for the known scope:
 - **~50%** for Read + Write + reasoning
@@ -107,6 +109,11 @@ A task must be sized so the agent needs <=50% of its context window for the know
 
 **If a task's Read list exceeds ~10 files or includes large files, split it.**
 **If you can't explain the task goal in one sentence, split it.**
+
+Tasks declare `context-load` in frontmatter to make this visible:
+- **light** — ≤5 files in Read list. Plenty of room.
+- **medium** — 6-10 files. At the budget edge. Monitor during execution.
+- If a task would be **heavy** (>10 files), it must be split before activation.
 
 ### Task Priority
 
@@ -121,6 +128,8 @@ Within the same priority, prefer tasks that unblock other tasks (check `blocked-
 ### Task Dependencies
 
 Tasks declare `blocked-by: [task-filename, ...]` in frontmatter. A task cannot be activated while any of its blockers are incomplete. The Orchestrator checks this when activating tasks and skips blocked ones, picking the next unblocked task instead.
+
+**Circular dependency detection:** Before activating any task, the Orchestrator walks the `blocked-by` chain. If a cycle is found (A blocks B blocks A), flag the cycle to the user and halt activation — do not silently skip. The Planner must restructure the tasks to break the cycle.
 
 ### Hierarchy in practice
 ```
@@ -336,7 +345,7 @@ Atomic checkpoint at every level of the hierarchy. A fresh agent should be able 
 4. **Wiki:** Update any wiki pages with reusable knowledge learned
 5. **Project:** Update the project's CLAUDE.md if project-level context changed
 
-6. **Git:** Stage all changes in `brain/` and commit: `[milestone/<name>] save: <resume-from note>`
+6. **Git:** Stage all changes in `brain/` and commit: `[milestone/<name>] save: <resume-from note>`. If no milestone exists (standalone task), use `[brain] save: <resume-from note>` instead
 
 This does NOT close the task — it just ensures a clean resume point at every level.
 
@@ -351,8 +360,10 @@ Spawn a Reviewer subagent to independently verify a task. Can be triggered manua
    - Relevant context from Read list
    - **NOT** the Implementer's conversation or reasoning
 3. Reviewer checks each Verify criterion, writes the `## Verification` section in the task file
-4. If verdict is `fail` -> report feedback, Implementer must fix and re-submit
+4. If verdict is `fail` -> report feedback, re-spawn Implementer in the same worktree with the Reviewer's feedback. The Implementer gets a fresh agent (no memory of prior attempt) but sees the failure notes in Progress
 5. If verdict is `pass` or `pass-with-notes` -> task is cleared for `/done`
+
+**Retry limit:** A task may fail verification at most 3 times. After the 3rd failure, escalate to the user — the task likely needs restructuring (split, revised Verify criteria, or different approach). Record all attempts in the task file's Progress section.
 
 For `solo` team-size tasks, `/verify` is skipped — the Generalist self-checks.
 
@@ -360,7 +371,7 @@ For `solo` team-size tasks, `/verify` is skipped — the Generalist self-checks.
 
 1. Run `/save` first to ensure all progress is captured
 2. Check team-size:
-   - If `pair` or `full`: ensure `## Verification` section exists with verdict `pass` or `pass-with-notes` — if missing, run `/verify` first. User can override with `/done! [summary]`
+   - If `pair` or `full`: ensure `## Verification` section exists with verdict `pass` or `pass-with-notes` — if missing, run `/verify` first. User can override with `/done! [summary]`, which logs `[OVERRIDE] User bypassed verification` in the done.md entry
    - If `solo`: self-check Verify criteria directly
 3. Append entry to `brain/tasks/done.md` with date, summary, and signal tag (`#routine`, `#had-friction`, `#surprised`, or `#failed-first`)
 4. Remove the task file from `brain/tasks/active/` (archive to project folder if desired)
@@ -368,7 +379,7 @@ For `solo` team-size tasks, `/verify` is skipped — the Generalist self-checks.
 6. Update the parent slice's task checkboxes (mark this task done)
 7. Commit: `[milestone/<name>] task: <summary> #signal`
 8. If the signal is anything other than `#routine`, automatically trigger `/review`
-9. If all tasks in the slice are done, check slice-level Verify criteria
+9. If all tasks in the slice are done, the Orchestrator checks slice-level Verify criteria directly (these are integration-level checks, not per-task). If any fail, create a new task to fix the issue. If all pass, mark the slice as complete and commit: `[milestone/<name>] slice: <slice-name> verified`
 
 ### /review
 
@@ -486,6 +497,9 @@ Every concept has ONE authoritative location. When you need to understand or mod
 | Git coordination | This file -> "Git Coordination" (summary) | `wiki/references/git-coordination.md` (full spec) |
 | Task priority | This file -> "Task Priority" | Task template frontmatter |
 | Task dependencies | This file -> "Task Dependencies" | Task template frontmatter |
+| Task status values | This file -> "Task" (under Task Hierarchy) | Task template frontmatter |
+| Context load | This file -> "The 50% Context Rule" | Task template frontmatter |
+| Verification retry limit | This file -> "/verify" | — |
 | Conflict resolution | This file -> "Conflict Resolution" | Reviewer role |
 | Project template | `templates/project.md` | This file -> "Adding a new project" |
 | Address | This file -> "Address" | — |

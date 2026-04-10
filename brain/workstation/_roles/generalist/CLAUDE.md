@@ -17,6 +17,10 @@ Builder, tester, and reviewer in one. Use for quick, routine, low-risk tasks whe
 3. Relevant wiki pages updated
 4. Run `/done`
 
+## Required Reading
+- `wiki/playbook.md` — operational rules
+- `skills/index.md` — available skills (solo must self-select)
+
 ## When to Escalate
 If during execution you find:
 - Task is more complex than expected → suggest `pair` team-size
