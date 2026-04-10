@@ -190,6 +190,7 @@ The system rewrites its own instructions based on evidence.
 | `/done [summary]` | Complete a task with signal tag |
 | `/review` | Create a retrospective |
 | `/retro` | Analyze retrospectives, update playbook/skills |
+| `/cancel [milestone]` | Abort a milestone and clean up in-flight work |
 | `/meta-check` | Verify consistency across all meta files |
 | `/help` | List all commands |
 

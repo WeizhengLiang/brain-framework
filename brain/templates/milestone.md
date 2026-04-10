@@ -1,5 +1,5 @@
 ---
-status: active
+status: active # active | cancelled
 phase: research # research → plan → execute → completion
 target-date:
 last-saved:

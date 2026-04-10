@@ -13,8 +13,15 @@ Living document. Rules here are distilled from [[retrospectives]] — patterns t
 
 <!-- Format:
 ### [short name]
-**Confidence:** emerging
-**Source:** [[retrospective-file]]
-**Rule:** The actionable instruction.
-**Why:** The evidence / reasoning behind it.
+- **Confidence:** emerging | proven | graduated | questioned
+- **Source:** [[retrospective-file]], [[retrospective-file-2]]
+- **Rule:** The actionable instruction.
+- **Why:** The evidence / reasoning behind it.
+- **Applies to:** where this rule kicks in (e.g., "all tasks", "planning phase", "wiki updates")
+
+Confidence levels:
+- emerging (1-2 confirming retros) — apply but watch for counter-evidence
+- proven (3+ confirming retros) — reliable, propose for graduation to CLAUDE.md
+- graduated — promoted to CLAUDE.md, remove from playbook
+- questioned — contradicted by recent evidence, review before applying
 -->

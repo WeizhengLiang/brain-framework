@@ -82,6 +82,7 @@ Task:       Execute -> Verify
 The destination. A significant deliverable or outcome. Can span many sessions.
 - Lives in project folders or as a standalone doc using `templates/milestone.md`
 - Tracks `phase` in frontmatter: `research` -> `plan` -> `execute` -> `completion`
+- `status` tracks lifecycle: `active` (in progress) or `cancelled` (aborted via `/cancel`)
 - Contains a mandatory Research section (current state, prior art, unknowns, constraints, skills inventory)
 - Contains an ordered list of slices (filled during Plan phase, not before)
 - Has acceptance criteria for the whole outcome
@@ -304,7 +305,8 @@ First-run personalization. Run this once after cloning the framework.
 3. For each active task, read its file in `brain/tasks/active/` — report the Progress section (resume point, what's checked off, what's left)
 4. Read `brain/tasks/backlog.md` for upcoming work
 5. Give a brief status report showing: active tasks with exact resume points, next tasks in the current slice, backlog highlights
-6. Suggest what to work on
+6. **Backlog hygiene:** Flag any backlog items older than 30 days — suggest the user archive, reprioritize, or delete stale items
+7. Suggest what to work on
 
 ### /plan [goal or milestone-name]
 
@@ -398,6 +400,22 @@ Distill findings into:
 - **Skills** (multi-step procedures) -> `brain/skills/` using `templates/skill.md`, add to `skills/index.md`
 
 If a playbook rule reaches `proven` confidence (3+ confirming retros), propose graduating it to CLAUDE.md. Archive processed retrospectives by adding `processed: true` to their frontmatter.
+
+### /cancel [milestone-name]
+
+Abort a milestone and clean up all in-flight work.
+
+1. Confirm with the user — cancellation is destructive
+2. For each active task in the milestone:
+   - Run `/save` to capture current progress
+   - Move task files from `tasks/active/` to the project folder with `status: cancelled`
+   - Remove index entries from `tasks/active.md`
+3. Set milestone frontmatter: `status: cancelled`, add a `## Cancellation` section with date and reason
+4. Git cleanup:
+   - Discard any in-flight worktrees for this milestone
+   - If a milestone branch exists: merge it to main if it contains valuable partial work (ask user), or delete it if not
+5. Append a summary entry to `tasks/done.md`: `- [x] [YYYY-MM-DD] CANCELLED: milestone-name — reason #cancelled`
+6. Optionally trigger `/review` if significant work was done before cancellation
 
 ### /meta-check
 
@@ -502,6 +520,9 @@ Every concept has ONE authoritative location. When you need to understand or mod
 | Verification retry limit | This file -> "/verify" | — |
 | Conflict resolution | This file -> "Conflict Resolution" | Reviewer role |
 | Project template | `templates/project.md` | This file -> "Adding a new project" |
+| Milestone cancellation | This file -> "/cancel" | Milestone template (`status` field) |
+| Wiki log format | `wiki/log.md` | — |
+| Playbook rule format | `wiki/playbook.md` → "Rules" | Retro-analysis skill |
 | Address | This file -> "Address" | — |
 | Meta-consistency | This file -> "Canonical Registry" + `/meta-check` | `brain/CLAUDE.md` |
 

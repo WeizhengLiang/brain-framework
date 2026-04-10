@@ -1,3 +1,9 @@
+---
+status: active # active | paused | complete | cancelled
+created: {{date}}
+last-saved:
+tags: []
+---
 # {{project-name}}
 
 ## Goal
