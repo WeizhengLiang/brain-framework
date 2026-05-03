@@ -189,7 +189,8 @@ The system rewrites its own instructions based on evidence.
 | `/verify` | Spawn Reviewer to independently verify work |
 | `/done [summary]` | Complete a task with signal tag |
 | `/review` | Create a retrospective |
-| `/retro` | Analyze retrospectives, update playbook/skills |
+| `/retro` | Analyze retrospectives, update playbook/skills, create framework proposals |
+| `/evolve` | Review and apply pending framework proposals (user approval required) |
 | `/cancel [milestone]` | Abort a milestone and clean up in-flight work |
 | `/meta-check` | Verify consistency across all meta files |
 | `/help` | List all commands |

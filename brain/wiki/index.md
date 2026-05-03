@@ -3,6 +3,7 @@
 ## Operational
 - [[playbook]] — living rules distilled from retrospectives
 - [[retrospectives/]] — post-action reviews from completed tasks
+- [[proposals/]] — framework improvement proposals from meta-learning
 - [[skills/index|Skill Catalog]] — capability modules loaded into agents per-task
 
 ## Concepts

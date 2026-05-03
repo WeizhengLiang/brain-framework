@@ -9,8 +9,8 @@
 - `workstation/_roles/` — planner, implementer, reviewer, generalist
 - `workstation/projects/` — one folder per project
 - `skills/` — capability modules loaded per-task, with trigger-based auto-matching
-- `wiki/` — persistent knowledge: concepts, references, decisions, retrospectives, playbook
-- `templates/` — milestone, slice, task, skill, decision, concept, retrospective
+- `wiki/` — persistent knowledge: concepts, references, decisions, retrospectives, proposals, playbook
+- `templates/` — milestone, slice, task, skill, decision, concept, retrospective, proposal
 
 ## What's Defined Where
 
@@ -21,14 +21,15 @@
 | 50% context rule | Root CLAUDE.md → "The 50% Context Rule" |
 | Agent team & orchestration | Root CLAUDE.md → "Agent Team & Roles" |
 | Skills system & auto-suggest | Root CLAUDE.md → "Skills System" |
-| All commands (/start, /plan, /save, /done, etc.) | Root CLAUDE.md → "Commands" |
+| All commands (/start, /plan, /save, /done, /evolve, etc.) | Root CLAUDE.md → "Commands" |
 | All workflows (starting work, inbox, etc.) | Root CLAUDE.md → "Workflows" |
 | Git coordination (full spec) | `wiki/references/git-coordination.md` |
 | Git coordination (summary) | Root CLAUDE.md → "Git Coordination" |
 | Task priority & dependencies | Root CLAUDE.md → "Task Priority" / "Task Dependencies" |
 | Conflict resolution | Root CLAUDE.md → "Conflict Resolution" |
 | Project template | `templates/project.md` |
-| Self-learning system (3 tiers) | Root CLAUDE.md → "Self-Learning System" |
+| Self-learning system (3 tiers + meta-learning) | Root CLAUDE.md → "Self-Learning System" |
+| Framework proposals & /evolve | Root CLAUDE.md → "Meta-learning" / "/evolve" |
 | Atomic save spec | Root CLAUDE.md → "/save" |
 | Core rules | Root CLAUDE.md → "Core Rules" |
 | Conventions (dates, filenames, tags) | Root CLAUDE.md → "Conventions" |

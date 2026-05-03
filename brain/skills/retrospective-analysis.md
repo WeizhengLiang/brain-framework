@@ -2,7 +2,7 @@
 name: "retrospective-analysis"
 description: "How to extract actionable patterns from retrospectives for playbook and skills"
 source: brain
-triggers: ["#retro", "retrospectives/", "playbook", "/retro"]
+triggers: ["#retro", "retrospectives/", "playbook", "/retro", "proposals/", "/evolve"]
 tags: [learning, brain-system]
 ---
 # Skill: Retrospective Analysis
@@ -31,6 +31,12 @@ When running `/retro` (Tier 3 analysis) or when reviewing multiple retrospective
 6. Mark processed retros with `processed: true` in frontmatter
 7. Check existing playbook rules — do any get upgraded from emerging → proven?
 8. Check proven rules — should any graduate to CLAUDE.md?
+9. Run the framework analysis pass:
+   a. Filter retros where `scope` is `framework` or `both`
+   b. Group by `Framework Impact > Target Component`
+   c. For targets with 2+ retros, create or update proposals in `wiki/proposals/` using `templates/proposal.md`
+   d. For existing proposals, update `source-retros` and upgrade `confidence` if warranted (3+ retros = proven)
+   e. Report any new or updated proposals to the user
 
 ### Graduating a Rule to CLAUDE.md
 1. Rule must be at confidence `proven` (3+ confirming retros)
@@ -51,6 +57,7 @@ When running `/retro` (Tier 3 analysis) or when reviewing multiple retrospective
 - **Symptom rules** — "don't let tests fail" instead of addressing why they failed.
 - **Rule bloat** — 50 playbook rules nobody reads. Keep it lean. Merge overlapping rules.
 - **Ignoring success patterns** — only analyzing failures. "What worked" is as valuable as "what broke."
+- **Framework-blind retros** — root cause is clearly a broken template, missing command step, or ineffective role guidance, but `scope` is left as `project`. Always ask: "Is the framework itself the problem?"
 
 ## Checklist
 - [ ] All unprocessed retros have been read
@@ -61,3 +68,4 @@ When running `/retro` (Tier 3 analysis) or when reviewing multiple retrospective
 - [ ] Processed retros marked
 - [ ] Playbook updated
 - [ ] Skills created for procedural patterns
+- [ ] Framework-scope retros checked for proposal creation

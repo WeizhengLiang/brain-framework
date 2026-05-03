@@ -16,7 +16,7 @@ Skills declare `triggers` in frontmatter. The Orchestrator matches these against
 ### Brain System
 - [[task-decomposition]] — how to break work into Milestone/Slice/Task correctly | triggers: `#planning`, `#decomposition`
 - [[wiki-writing]] — how to write good wiki pages that persist value | triggers: `wiki/`, `#documentation`
-- [[retrospective-analysis]] — how to extract actionable patterns from retros | triggers: `#retro`, `retrospectives/`
+- [[retrospective-analysis]] — how to extract actionable patterns from retros and framework proposals | triggers: `#retro`, `retrospectives/`, `proposals/`, `/evolve`
 
 ### External (installed packages)
 <!-- Reference skills from everything-claude-code or other packages here -->

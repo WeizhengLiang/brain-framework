@@ -35,12 +35,14 @@ your-vault/                       <- vault root, start Claude Code here
     │   ├── concepts/
     │   ├── references/
     │   ├── decisions/
-    │   └── retrospectives/          <- post-action reviews (Tier 2)
+    │   ├── retrospectives/          <- post-action reviews (Tier 2)
+    │   └── proposals/               <- framework improvement proposals (meta-learning)
     └── templates/
         ├── milestone.md
         ├── slice.md
         ├── task.md                   <- Read/Write/Verify contract
         ├── project.md                <- project CLAUDE.md template
+        ├── proposal.md               <- framework change proposal
         ├── skill.md
         ├── decision.md
         ├── concept.md
@@ -389,17 +391,60 @@ Tier 2 — create a retrospective for the most recent completed task (or a speci
 
 ### /retro
 
-Tier 3 — periodic pattern analysis. Read all unprocessed retrospectives in `brain/wiki/retrospectives/`. Look for:
-- Repeated friction or failure patterns
-- Approaches that consistently worked
-- Decisions that were validated or invalidated
-- Process bottlenecks
+Tier 3 — periodic pattern analysis. Two passes: project patterns and framework patterns.
 
-Distill findings into:
-- **Playbook rules** (single directives) -> `brain/wiki/playbook.md`
-- **Skills** (multi-step procedures) -> `brain/skills/` using `templates/skill.md`, add to `skills/index.md`
+**Project analysis pass** (existing behavior):
 
-If a playbook rule reaches `proven` confidence (3+ confirming retros), propose graduating it to CLAUDE.md. Archive processed retrospectives by adding `processed: true` to their frontmatter.
+1. Read all unprocessed retrospectives in `brain/wiki/retrospectives/`
+2. Look for:
+   - Repeated friction or failure patterns
+   - Approaches that consistently worked
+   - Decisions that were validated or invalidated
+   - Process bottlenecks
+3. Distill findings into:
+   - **Playbook rules** (single directives) -> `brain/wiki/playbook.md`
+   - **Skills** (multi-step procedures) -> `brain/skills/` using `templates/skill.md`, add to `skills/index.md`
+4. If a playbook rule reaches `proven` confidence (3+ confirming retros), propose graduating it to CLAUDE.md
+
+**Framework analysis pass** (meta-learning):
+
+5. Filter retrospectives where `scope` is `framework` or `both` and `processed: false`
+6. Group by `Framework Impact > Target Component`
+7. For each target component with 2+ retrospectives:
+   a. Check if a proposal already exists in `brain/wiki/proposals/` for that target
+   b. If a proposal exists: update its `source-retros` list, upgrade `confidence` if warranted (3+ retros = proven), add new evidence
+   c. If no proposal exists: create a new proposal using `templates/proposal.md` in `brain/wiki/proposals/`
+   d. Draft the Problem, Evidence, and Proposed Change sections from the retrospectives' Framework Impact data
+8. Report framework proposals created or updated to the user
+
+**Finalize:**
+
+9. Archive processed retrospectives by adding `processed: true` to their frontmatter
+
+### /evolve
+
+Review and act on pending framework proposals. The meta-learning approval gate — evidence-based changes to the framework itself, always with user approval.
+
+1. Read all proposal files in `brain/wiki/proposals/` where `status: proposed`
+2. Sort by confidence (proven first, then emerging), then by target component
+3. Present a summary table: target component, proposal title, confidence, number of source retros, date
+4. For each proposal (or user-selected subset):
+   - Show the full Problem, Evidence, and Proposed Change (Before/After)
+   - Show the **current state** of the target file alongside the proposal's expected "Before" (detect drift)
+   - Ask user for decision: **approve**, **reject [reason]**, or **defer**
+5. On **approve**:
+   a. Apply the proposed change to the target file
+   b. Set proposal `status: implemented`, record date in Decision section
+   c. Run `/meta-check` to validate the change did not break consistency
+   d. If `/meta-check` fails: report the failure, revert the change, set status back to `proposed` with a note
+   e. If `/meta-check` passes: record the pass in the proposal's Decision section
+   f. Log the change in `brain/wiki/log.md`
+6. On **reject**:
+   a. Set proposal `status: rejected`, record reason and date in Decision section
+   b. The proposal file is kept for historical record
+7. On **defer**:
+   a. No status change — stays in queue for next `/evolve` run
+8. Report summary: how many approved, rejected, deferred. Note any proven proposals that were deferred
 
 ### /cancel [milestone-name]
 
@@ -430,7 +475,8 @@ Verify consistency across all meta files. Run after any change to CLAUDE.md, rol
    - **Missing references:** New concepts in root CLAUDE.md not reflected in the canonical registry
    - **Orphan files:** Templates or skills not referenced from any index
    - **Contradictions:** Different files stating conflicting rules
-5. Report findings and fix any issues found
+5. **Pending framework proposals:** Read `brain/wiki/proposals/` for proposals with `status: proposed` and `confidence: proven`. If any exist, report: "N proven framework proposals are pending review. Run `/evolve` to review." This is informational, not blocking.
+6. Report findings and fix any issues found
 
 ### /help
 
@@ -458,15 +504,38 @@ A full retrospective in `brain/wiki/retrospectives/`. Fires when:
 ### Tier 3 — Macro (/retro, deliberate)
 User triggers or Claude suggests when unprocessed retros pile up. Reads retrospectives, finds patterns, updates `brain/wiki/playbook.md`. Proven rules graduate to CLAUDE.md — the system rewrites its own instructions based on evidence.
 
+### Meta-learning — Framework self-improvement
+
+The same 3-tier system that learns about projects also learns about itself. When the root cause of friction is a framework component (template, command, role, orchestration, skill-system, or CLAUDE.md section), the retrospective captures it with `scope: framework` and a structured `## Framework Impact` section.
+
+`/retro` runs a framework analysis pass alongside the project pattern pass. Framework-scoped retros grouped by target component produce **framework proposals** stored in `brain/wiki/proposals/`. Proposals follow the same confidence model as playbook rules: `emerging` (2+ retros) → `proven` (3+ retros).
+
+`/evolve` is the approval gate. The user reviews proposals, sees the current state alongside the proposed change, and decides: approve, reject, or defer. Approved changes are applied and validated by `/meta-check`. Rejected proposals are kept for historical record.
+
+**Key constraints:**
+- All framework changes require explicit user approval via `/evolve`
+- `/meta-check` validates every approved change — reverts on failure
+- A retrospective with `scope: both` can produce both a playbook rule and a framework proposal
+- Proposals reference the Canonical Registry to identify impact
+
 ### Learning flow
 ```
 /done -> signal tag -> if non-routine -> /review -> retrospective written
                                                         |
-/retro -> read retrospectives -> find patterns -+-> single directive -> playbook.md
-                                                +-> multi-step procedure -> skills/
-                                                        |
-                                        proven rules -> graduate to CLAUDE.md
-                                        proven skills -> arm future tasks automatically
+/retro -> read retrospectives -+-> project patterns -+-> single directive -> playbook.md
+                               |                     +-> multi-step procedure -> skills/
+                               |                              |
+                               |              proven rules -> graduate to CLAUDE.md
+                               |              proven skills -> arm future tasks automatically
+                               |
+                               +-> framework patterns (scope: framework | both)
+                                        |
+                                        +-> group by target component
+                                        +-> 2+ retros on same target -> framework proposal
+                                                |
+                                    /evolve -> user reviews -> approve | reject | defer
+                                                |
+                                        approve -> apply change -> /meta-check validates
 ```
 
 ## Address
@@ -525,5 +594,10 @@ Every concept has ONE authoritative location. When you need to understand or mod
 | Playbook rule format | `wiki/playbook.md` → "Rules" | Retro-analysis skill |
 | Address | This file -> "Address" | — |
 | Meta-consistency | This file -> "Canonical Registry" + `/meta-check` | `brain/CLAUDE.md` |
+| Meta-learning | This file -> "Meta-learning" | `brain/CLAUDE.md` |
+| Framework proposals | `wiki/proposals/` | This file -> "Meta-learning", `/evolve`, `/retro` |
+| Proposal template | `templates/proposal.md` | This file -> "/retro", "/evolve" |
+| Framework scope (retrospective) | `templates/retrospective.md` -> `scope` field | This file -> "Meta-learning" |
+| /evolve command | This file -> "/evolve" | — |
 
 **Rule:** When modifying any canonical file, check its "Referenced By" column and verify those files still make sense. When adding a new concept, add it to this registry. Run `/meta-check` after meta changes.
